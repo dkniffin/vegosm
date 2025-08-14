@@ -1,0 +1,6 @@
+.vegicon:before {
+  
+}
+.vegicon-vegan:before {
+  content: "\F002";
+}

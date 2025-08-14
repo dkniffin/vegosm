@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "esbuild src/index.js",
-    "build:dev": "esbuild src/index.js --bundle --sourcemap --watch --outdir=dist --loader:.png=file --public-path=/dist",
+    "build:dev": "esbuild src/index.js --bundle --sourcemap --watch --outdir=dist --loader:.png=file --loader:.svg=file  --loader:.ttf=file --loader:.woff=file --loader:.eot=file --public-path=/dist",
     "serve": "http-server --cors",
     "dev": "npm run serve & npm run build:dev"
   },
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "leaflet": "^1.9.4",
-    "leaflet-overpass-layer": "^2.9.0"
+    "leaflet-overpass-layer": "^2.9.0",
+    "leaflet.icon.glyph": "^0.3.0"
   }
 }
