@@ -1,0 +1,22 @@
+{
+  "name": "vegosm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/index.js",
+    "build:dev": "esbuild src/index.js --bundle --sourcemap --watch --outdir=dist --loader:.png=file",
+    "serve": "http-server --cors",
+    "dev": "npm run serve & npm run build:dev"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "0.25.9",
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {
+    "leaflet": "^1.9.4",
+    "leaflet-overpass-layer": "^2.9.0"
+  }
+}
