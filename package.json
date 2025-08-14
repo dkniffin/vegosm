@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "esbuild src/index.js",
-    "build:dev": "esbuild src/index.js --bundle --sourcemap --watch --outdir=dist --loader:.png=file",
+    "build:dev": "esbuild src/index.js --bundle --sourcemap --watch --outdir=dist --loader:.png=file --public-path=/dist",
     "serve": "http-server --cors",
     "dev": "npm run serve & npm run build:dev"
   },
