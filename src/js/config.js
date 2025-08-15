@@ -1,0 +1,1 @@
+export const VALID_CUISINES = ["pizza", "burger", "coffee_shop", "regional", "chinese", "italian", "sandwich", "mexican", "japanese", "kebab", "american", "indian", "sushi", "asian", "thai", "french", "ice_cream"]

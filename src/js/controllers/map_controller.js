@@ -8,6 +8,12 @@ import "leaflet.awesome-markers/dist/leaflet.awesome-markers.css"
 import { LocateControl } from "leaflet.locatecontrol"
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css"
 
+import "leaflet-easybutton"
+import "leaflet-easybutton/src/easy-button.css"
+import "leaflet-tag-filter-button/src/leaflet-tag-filter-button"
+import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
+import { VALID_CUISINES } from "../config"
+
 export default class extends Controller {
   static targets = [ "map", "filters" ]
 
@@ -34,11 +40,16 @@ export default class extends Controller {
     const initialZoom = parseInt(urlParams.get('zoom')) || 13
     this.map = L.map(this.mapTarget).setView([initialLat, initialLng], initialZoom)
 
-    new LocateControl({ keepCurrentZoomLevel: true }).addTo(this.map)
-
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(this.map)
+
+    new LocateControl({ keepCurrentZoomLevel: true }).addTo(this.map)
+
+    L.control.tagFilterButton({
+      data: VALID_CUISINES,
+      icon: "fa-utensils"
     }).addTo(this.map)
   }
 
@@ -47,9 +58,8 @@ export default class extends Controller {
     const filterValues = this._valuesFromFormData(formData)
 
     const veg = filterValues["veg"]
-    const cuisines = filterValues["all_cuisines"] == "on" ? undefined : filterValues["cuisine"]
 
-    const results = await this._fetchFromOverpass(this._buildOverpassQuery(veg, cuisines))
+    const results = await this._fetchFromOverpass(this._buildOverpassQuery(veg))
 
     results.forEach((node) => {
       if (this._nodeIds.includes(node.id)) { return }
@@ -60,7 +70,8 @@ export default class extends Controller {
           prefix: "fa",
           icon: "utensils",
           markerColor: color
-        })
+        }),
+        tags: [node.tags.cuisine]
       }).bindPopup(JSON.stringify(node)).addTo(this.map)
       this._nodeIds.push(node.id)
     })
@@ -84,26 +95,25 @@ export default class extends Controller {
     return data
   }
 
-  _buildOverpassQuery(veg, cuisines) {
-    const cuisineSubstring = cuisines ? `["cuisine"~"${cuisines.join("|")}"]` : ""
+  _buildOverpassQuery(veg) {
     if (veg == "vegan") {
       return `
-        node["diet:vegan"="only"]${cuisineSubstring}({{bbox}});
+        node["diet:vegan"="only"]({{bbox}});
         out geom;
       `
     } else if (veg == "vegetarian") {
       return `
         (
-          node["diet:vegan"="only"]${cuisineSubstring}({{bbox}});
-          node["diet:vegetarian"="only"]${cuisineSubstring}({{bbox}});
+          node["diet:vegan"="only"]({{bbox}});
+          node["diet:vegetarian"="only"]({{bbox}});
         );
         out geom;
       `
     } else {
       return `
         (
-          node["diet:vegan"]${cuisineSubstring}({{bbox}});
-          node["diet:vegetarian"]${cuisineSubstring}({{bbox}});
+          node["diet:vegan"]({{bbox}});
+          node["diet:vegetarian"]({{bbox}});
         );
         out geom;
       `
