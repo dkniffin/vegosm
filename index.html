@@ -7,7 +7,23 @@
   <script src="./dist/index.js" type="application/javascript"></script>
   <link rel="stylesheet" href="./dist/index.css" />
 </head>
-<body>
-  <div id="map"></div>
+<body data-controller="map">
+  <div id="sidebar">
+    <h1>Filters</h1>
+
+    <h2>Dietary Restrictions</h2>
+    <label for="vegan">Vegan</label>
+    <input type="checkbox" name="vegan" />
+    <br />
+    <label for="vegetarian">Vegetarian</label>
+    <input type="checkbox" name="vegetarian" />
+    <br />
+    <label for="gluten-free">Gluten Free</label>
+    <input type="checkbox" name="gluten-free" />
+
+    <h2>Cuisine</h2>
+  </div>
+
+  <div data-map-target="map" id="map"></div>
 </body>
 </html>
