@@ -15,7 +15,7 @@ import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
 import { VALID_CUISINES } from "../config"
 
 export default class extends Controller {
-  static targets = [ "map", "filters" ]
+  static targets = [ "map" ]
 
   initialize() {
     this._setupMap()
@@ -27,10 +27,6 @@ export default class extends Controller {
     this.map.addEventListener("zoomend", this._updateFromFilters.bind(this))
     this.map.addEventListener("moveend", this._updateUrlParams.bind(this))
     this.map.addEventListener("zoomend", this._updateUrlParams.bind(this))
-  }
-
-  filterChange() {
-    this._updateFromFilters()
   }
 
   _setupMap() {
@@ -51,20 +47,30 @@ export default class extends Controller {
       data: VALID_CUISINES,
       icon: "fa-utensils"
     }).addTo(this.map)
+
+    this.veganLayer = L.layerGroup().addTo(this.map)
+    this.vegetarianLayer = L.layerGroup().addTo(this.map)
+    this.friendlyLayer = L.layerGroup().addTo(this.map)
+
+    this.layerControl = L.control.layers(
+      undefined,
+      {
+        "Vegan only": this.veganLayer,
+        "Vegetarian only": this.vegetarianLayer,
+        "Vegan friendly": this.friendlyLayer
+      }
+    ).addTo(this.map)
   }
 
   async _updateFromFilters() {
-    const formData = new FormData(this.filtersTarget)
-    const filterValues = this._valuesFromFormData(formData)
-
-    const veg = filterValues["veg"]
-
-    const results = await this._fetchFromOverpass(this._buildOverpassQuery(veg))
+    const query = '(node["diet:vegan"]({{bbox}});node["diet:vegetarian"]({{bbox}}););out geom;'
+    const results = await this._fetchFromOverpass(query)
 
     results.forEach((node) => {
       if (this._nodeIds.includes(node.id)) { return }
 
-      const color = this._markerColor(node.tags)
+      const color = this._markerColorFor(node.tags)
+      const layer = this._layerFor(node.tags)
       L.marker([node.lat, node.lon], {
         icon: L.AwesomeMarkers.icon({
           prefix: "fa",
@@ -72,52 +78,9 @@ export default class extends Controller {
           markerColor: color
         }),
         tags: [node.tags.cuisine]
-      }).bindPopup(JSON.stringify(node)).addTo(this.map)
+      }).bindPopup(JSON.stringify(node)).addTo(layer)
       this._nodeIds.push(node.id)
     })
-  }
-
-  _valuesFromFormData(formData) {
-    // NOTE: we can't use Object.fromEntries because we to support checkboxes with the same name
-    let data = {}
-    for (const [key, value] of formData.entries()) {
-      if (data.hasOwnProperty(key)) {
-        if (Array.isArray(data[key])) {
-          data[key].push(value)
-        } else {
-          const oldValue = data[key]
-          data[key] = [oldValue, value]
-        }
-      } else {
-        data[key] = value
-      }
-    }
-    return data
-  }
-
-  _buildOverpassQuery(veg) {
-    if (veg == "vegan") {
-      return `
-        node["diet:vegan"="only"]({{bbox}});
-        out geom;
-      `
-    } else if (veg == "vegetarian") {
-      return `
-        (
-          node["diet:vegan"="only"]({{bbox}});
-          node["diet:vegetarian"="only"]({{bbox}});
-        );
-        out geom;
-      `
-    } else {
-      return `
-        (
-          node["diet:vegan"]({{bbox}});
-          node["diet:vegetarian"]({{bbox}});
-        );
-        out geom;
-      `
-    }
   }
 
   _buildOverpassUrlFromQuery(query) {
@@ -144,13 +107,23 @@ export default class extends Controller {
     return results["elements"]
   }
 
-  _markerColor(tags) {
+  _markerColorFor(tags) {
     if (tags["diet:vegan"] == "only") {
       return "green"
     } else if (tags["diet:vegetarian"] == "only") {
       return "purple"
     } else {
       return "blue"
+    }
+  }
+
+  _layerFor(tags) {
+    if (tags["diet:vegan"] == "only") {
+      return this.veganLayer
+    } else if (tags["diet:vegetarian"] == "only") {
+      return this.vegetarianLayer
+    } else {
+      return this.friendlyLayer
     }
   }
 

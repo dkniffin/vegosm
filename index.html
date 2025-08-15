@@ -10,34 +10,6 @@
   <script src="https://kit.fontawesome.com/4e75de9996.js" crossorigin="anonymous"></script>
 </head>
 <body data-controller="map">
-  <div id="sidebar">
-    <form data-map-target="filters" data-action="change->map#filterChange">
-      <h1>Filters</h1>
-      <br />
-
-      <fieldset>
-        <legend>Veg preference</legend>
-        <input type="radio" name="veg" id="vegan" value="vegan" />
-        <label for="vegan">Vegan only</label>
-        <br />
-        <input type="radio" name="veg" id="vegetarian" value="vegetarian" />
-        <label for="vegetarian">Veg* only</label>
-        <br />
-        <input type="radio" name="veg" id="friendly" value="friendly" checked />
-        <label for="friendly">Veg* friendly</label>
-      </fieldset>
-      <br />
-
-      <!-- <fieldset>
-        <legend>Other restrictions</legend>
-        <input type="checkbox" name="gluten" />
-        <label for="gluten">Gluten free</label>
-      </fieldset>
-      <br /> -->
-    </form>
-
-  </div>
-
   <div data-map-target="map" id="map"></div>
 </body>
 </html>
