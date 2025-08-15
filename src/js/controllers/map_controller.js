@@ -5,10 +5,8 @@ import "leaflet/dist/leaflet.css"
 import "leaflet-overpass-layer"
 import "leaflet-overpass-layer/dist/OverPassLayer.css"
 
-import "leaflet.icon.glyph"
-
-import veganIconUrl from "../../icons/vegan-marker.svg"
-
+import "leaflet.awesome-markers/dist/leaflet.awesome-markers"
+import "leaflet.awesome-markers/dist/leaflet.awesome-markers.css"
 
 export default class extends Controller {
   static targets = [ "map" ]
@@ -21,14 +19,16 @@ export default class extends Controller {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    const veganIcon = L.icon({
-      iconUrl: veganIconUrl
+    const icon = L.AwesomeMarkers.icon({
+      prefix: "fa",
+      icon: "mug-saucer",
+      markerColor: "green"
     })
 
     const opl = new L.OverPassLayer({
       "query": 'nwr["diet:vegan"]({{bbox}});out geom;',
       minZoom: 10,
-      markerIcon: veganIcon
+      markerIcon: icon
     })
 
     map.addLayer(opl)
