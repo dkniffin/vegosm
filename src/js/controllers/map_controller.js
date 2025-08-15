@@ -19,18 +19,25 @@ export default class extends Controller {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    const icon = L.AwesomeMarkers.icon({
-      prefix: "fa",
-      icon: "mug-saucer",
-      markerColor: "green"
-    })
 
-    const opl = new L.OverPassLayer({
-      "query": 'nwr["diet:vegan"]({{bbox}});out geom;',
+    new L.OverPassLayer({
+      "query": 'nwr["diet:vegan"="only"]({{bbox}});out geom;',
       minZoom: 10,
-      markerIcon: icon
-    })
+      markerIcon: L.AwesomeMarkers.icon({
+        prefix: "fa",
+        icon: "utensils",
+        markerColor: "green"
+      })
+    }).addTo(map)
 
-    map.addLayer(opl)
+    new L.OverPassLayer({
+      "query": 'nwr["diet:vegan"="yes"]({{bbox}});out geom;',
+      minZoom: 10,
+      markerIcon: L.AwesomeMarkers.icon({
+        prefix: "fa",
+        icon: "utensils",
+        markerColor: "purple"
+      })
+    }).addTo(map)
   }
 }
