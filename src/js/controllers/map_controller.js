@@ -18,6 +18,9 @@ export default class extends Controller {
     this._nodeIds = []
 
     this.map.addEventListener("moveend", this._updateFromFilters.bind(this))
+    this.map.addEventListener("zoomend", this._updateFromFilters.bind(this))
+    this.map.addEventListener("moveend", this._updateUrlParams.bind(this))
+    this.map.addEventListener("zoomend", this._updateUrlParams.bind(this))
   }
 
   filterChange() {
@@ -25,7 +28,11 @@ export default class extends Controller {
   }
 
   _setupMap() {
-    this.map = L.map(this.mapTarget).setView([51.505, -0.10], 12)
+    const urlParams = new URLSearchParams(window.location.search)
+    const initialLat = parseFloat(urlParams.get('lat')) || 51.505
+    const initialLng = parseFloat(urlParams.get('lng')) || -0.10
+    const initialZoom = parseInt(urlParams.get('zoom')) || 13
+    this.map = L.map(this.mapTarget).setView([initialLat, initialLng], initialZoom)
 
     new LocateControl({ keepCurrentZoomLevel: true }).addTo(this.map)
 
@@ -135,5 +142,18 @@ export default class extends Controller {
     } else {
       return "blue"
     }
+  }
+
+  _updateUrlParams() {
+    const center = this.map.getCenter()
+    const zoom = this.map.getZoom()
+    const params = new URLSearchParams(window.location.search)
+
+    params.set('lat', center.lat.toFixed(5))
+    params.set('lng', center.lng.toFixed(5))
+    params.set('zoom', zoom)
+
+    const newUrl = `${window.location.pathname}?${params.toString()}`
+    history.replaceState(null, '', newUrl)
   }
 }
