@@ -18,8 +18,7 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "leaflet": "^1.9.4",
-    "leaflet-overpass-layer": "^2.9.0",
     "leaflet.awesome-markers": "^2.0.5",
-    "leaflet.icon.glyph": "^0.3.0"
+    "leaflet.locatecontrol": "^0.84.2"
   }
 }
