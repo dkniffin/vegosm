@@ -12,7 +12,7 @@ import "leaflet-easybutton"
 import "leaflet-easybutton/src/easy-button.css"
 import "leaflet-tag-filter-button/src/leaflet-tag-filter-button"
 import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
-import { VALID_CUISINES } from "../config"
+import { CUISINES, VALID_CUISINES } from "../config"
 
 export default class extends Controller {
   static targets = [ "map" ]
@@ -45,7 +45,8 @@ export default class extends Controller {
 
     L.control.tagFilterButton({
       data: VALID_CUISINES,
-      icon: "fa-utensils"
+      icon: "fa-utensils",
+      filterOnEveryClick: true
     }).addTo(this.map)
 
     this.veganLayer = L.layerGroup().addTo(this.map)
@@ -71,10 +72,18 @@ export default class extends Controller {
 
       const color = this._markerColorFor(node.tags)
       const layer = this._layerFor(node.tags)
+      const cuisineTag = node.tags["cuisine"]
+      let icon
+      if (cuisineTag && CUISINES.hasOwnProperty(cuisineTag)) {
+        icon = CUISINES[cuisineTag]["icon"]
+      } else {
+        icon = "utensils"
+      }
+
       L.marker([node.lat, node.lon], {
         icon: L.AwesomeMarkers.icon({
           prefix: "fa",
-          icon: "utensils",
+          icon: icon,
           markerColor: color
         }),
         tags: [node.tags.cuisine]
