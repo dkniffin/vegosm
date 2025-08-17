@@ -12,7 +12,9 @@ import "leaflet-easybutton"
 import "leaflet-easybutton/src/easy-button.css"
 import "leaflet-tag-filter-button/src/leaflet-tag-filter-button"
 import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
+
 import { CUISINES, VALID_CUISINES } from "../config"
+import buildPopup from "../utils/buildPopup"
 
 export default class extends Controller {
   static targets = [ "map" ]
@@ -64,7 +66,7 @@ export default class extends Controller {
   }
 
   async _updateFromFilters() {
-    const query = '(node["diet:vegan"]({{bbox}});node["diet:vegetarian"]({{bbox}}););out geom;'
+    const query = '(node["diet:vegan"]["diet:vegan"!="no"]({{bbox}});node["diet:vegetarian"]["diet:vegetarian"!="no"]({{bbox}}););out geom;'
     const results = await this._fetchFromOverpass(query)
 
     results.forEach((node) => {
@@ -80,6 +82,8 @@ export default class extends Controller {
         icon = "utensils"
       }
 
+      const popupContents = buildPopup(node)
+
       L.marker([node.lat, node.lon], {
         icon: L.AwesomeMarkers.icon({
           prefix: "fa",
@@ -87,7 +91,8 @@ export default class extends Controller {
           markerColor: color
         }),
         tags: [node.tags.cuisine]
-      }).bindPopup(JSON.stringify(node)).addTo(layer)
+      }).bindPopup(popupContents).addTo(layer)
+
       this._nodeIds.push(node.id)
     })
   }

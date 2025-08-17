@@ -20,6 +20,7 @@
     "leaflet": "^1.9.4",
     "leaflet-tag-filter-button": "^0.0.5",
     "leaflet.awesome-markers": "^2.0.5",
-    "leaflet.locatecontrol": "^0.84.2"
+    "leaflet.locatecontrol": "^0.84.2",
+    "opening_hours": "^3.9.0"
   }
 }
