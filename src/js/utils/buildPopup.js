@@ -1,47 +1,55 @@
-import OpeningHours from "opening_hours"
-import osm_logo from "../../icons/osm_logo.svg"
+import osmLogo from "../../icons/osm_logo.svg"
+import prettyOsmNode from "./prettyOsmNode"
 
 export default function buildPopup(node) {
-  const tags = node.tags
-
-  function safeGetValue(key, callback) {
-    if (tags.hasOwnProperty(key)) {
-      callback(tags[key])
-    }
-  }
+  const nodeData = prettyOsmNode(node)
 
   let popupHtml = '<div class="shop-popup">'
 
-  const osmHref = `https://www.openstreetmap.org/node/${node.id}`
-
-
-  if (tags.hasOwnProperty("name")) {
-    popupHtml += `<h1>${tags["name"]}</h1>`
+  if (nodeData["name"]) {
+    popupHtml += `<h1>${nodeData["name"]}</h1>`
   } else {
     popupHtml += "<h1>???</h1>"
   }
 
   popupHtml += `
-    <a class="osm-link" href=${osmHref}>
-      <img src=${osm_logo} />
+    <a class="osm-link" href=${nodeData["osmUrl"]}>
+      <img src=${osmLogo} />
     </a>
     <br />
   `
 
-  // const address = `${node.tags["addr:housenumber"]} ${node.tags["addr:street"]} ${node.tags["addr:city"]}, ${node.tags["addr:state"]} ${node.tags["postcode"]}`
+  if (nodeData["address"]) {
+    popupHtml += `<span>${nodeData["address"]}</span><br />`
+  }
 
-  safeGetValue("phone", (phone) => {
-    popupHtml += `<a href="tel:${phone}">${phone}</a><br />`
-  })
+  if (nodeData["phone"]) {
+    popupHtml += `<a href="tel:${nodeData["phone"]}">${nodeData["phone"]}</a><br />`
+  }
 
-  safeGetValue("website", (website) => {
-    popupHtml += `<a href="tel:${website}">${website}</a><br />`
-  })
+  if (nodeData["website"]) {
+    popupHtml += `<a href="tel:${nodeData["website"]}">${nodeData["website"]}</a><br />`
+  }
 
-  safeGetValue("opening_hours", (opening_hours) => {
-    const openingHours = new OpeningHours(opening_hours, {}, { 'locale': navigator.language }).prettifyValue({ conf: { locale: "en" }})
-    popupHtml += `<span>${openingHours}</span><br />`
-  })
+  if (nodeData["openHours"]) {
+    const openHours = nodeData["openHours"]
+    const { now, ...rest } = openHours
+    if (openHours["now"]) {
+      popupHtml += `<span>Currently: <span class="currently-open">Open</span></span><br />`
+    } else {
+      popupHtml += `<span>Currently: <span class="currently-closed">Closed</span></span><br />`
+    }
+
+    popupHtml += "<table>"
+    Object.keys(rest).forEach((dayOfWeek) => {
+      const dayOpenString = rest[dayOfWeek]
+      popupHtml += `<tr><td>${dayOfWeek}</td><td>${dayOpenString}</td></tr>`
+    })
+    popupHtml += "</table"
+  }
+
+  // For debugging:
+  // popupHtml += JSON.stringify(nodeData)
 
   popupHtml += "</div>"
   return popupHtml
