@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/index.js",
-    "build:dev": "esbuild src/js/index.js --bundle --sourcemap --watch --outdir=dist --loader:.png=file --loader:.svg=file --public-path=/dist",
+    "build": "node esbuild.config.js --minify --public-path=/vegosm/dist",
+    "build:dev": "node esbuild.config.js --watch",
     "serve": "http-server --cors",
     "dev": "npm run serve & npm run build:dev"
   },
