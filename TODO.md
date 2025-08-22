@@ -2,7 +2,7 @@
 - Add more icons for cuisines. Will likely need to involve custom imported icons, as the standard datasets don't have them
 - Look into domain names
 - Add filter for gluten free
-- Improve mobile UI
 - Refactor code
 - Link to more external apps, like google maps
 - Dark mode
+- Add a spinner while data is loading

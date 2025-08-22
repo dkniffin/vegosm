@@ -13,11 +13,14 @@ import "leaflet-easybutton/src/easy-button.css"
 import "leaflet-tag-filter-button/src/leaflet-tag-filter-button"
 import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
 
+import "leaflet-sidebar"
+import "leaflet-sidebar/src/L.Control.Sidebar.css"
+
 import { CUISINES, VALID_CUISINES } from "../config"
 import buildPopup from "../utils/buildPopup"
 
 export default class extends Controller {
-  static targets = [ "map" ]
+  static targets = [ "map", "sidebar" ]
 
   initialize() {
     this._setupMap()
@@ -63,6 +66,11 @@ export default class extends Controller {
         "Vegan friendly": this.friendlyLayer
       }
     ).addTo(this.map)
+
+    this.sidebar = L.control.sidebar(this.sidebarTarget, {
+      position: 'left',
+      autoPan: false
+    }).addTo(this.map)
   }
 
   async _updateFromFilters() {
@@ -91,7 +99,10 @@ export default class extends Controller {
           markerColor: color
         }),
         tags: [node.tags.cuisine]
-      }).bindPopup(popupContents).addTo(layer)
+      }).addTo(layer).on("click", function () {
+        this.sidebar.setContent(popupContents)
+        this.sidebar.toggle()
+      }.bind(this))
 
       this._nodeIds.push(node.id)
     })
