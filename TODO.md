@@ -1,6 +1,5 @@
 - Add filter for hiding chains (via brand=*, I think)
 - Add more icons for cuisines. Will likely need to involve custom imported icons, as the standard datasets don't have them
-- Set up app on Github pages so it's accessible to internet
 - Look into domain names
 - Add filter for gluten free
 - Improve mobile UI
