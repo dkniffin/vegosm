@@ -1,7 +1,5 @@
 const MIRRORS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.openstreetmap.fr/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter'
+  'https://overpass-api.de/api/interpreter'
 ]
 
 const MAX_RETRIES = 3
