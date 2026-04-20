@@ -6,6 +6,29 @@
   left: 0;
 }
 
+.map-spinner {
+  display: none;
+  position: absolute;
+  bottom: 30px;
+  right: 10px;
+  z-index: 1000;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.15);
+  border-top-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  animation: map-spin 0.7s linear infinite;
+  pointer-events: none;
+}
+
+.map-spinner.visible {
+  display: block;
+}
+
+@keyframes map-spin {
+  to { transform: rotate(360deg); }
+}
+
 body { /* This is to increase specificity */
   .leaflet-sidebar.left {
     box-shadow: 0px 0px 25px rgba(0,0,0,0.4);

@@ -24,7 +24,7 @@ import { fetchFromOverpass } from "../utils/overpass"
 import { debounce } from "../utils/debounce"
 
 export default class extends Controller {
-  static targets = [ "map", "sidebar" ]
+  static targets = [ "map", "sidebar", "spinner" ]
 
   initialize() {
     this._setupMap()
@@ -89,10 +89,15 @@ export default class extends Controller {
     const uncached = getUncachedTiles(this.map.getBounds(), this._cachedTiles)
     if (uncached.length === 0) return
 
-    const nodes = await fetchFromOverpass(OVERPASS_QUERY, tilesBbox(uncached))
-    this._cachedTiles = saveTiles(this._cachedTiles, uncached)
-    saveNodes(nodes)
-    this._addNodesToMap(nodes)
+    this.spinnerTarget.classList.add("visible")
+    try {
+      const nodes = await fetchFromOverpass(OVERPASS_QUERY, tilesBbox(uncached))
+      this._cachedTiles = saveTiles(this._cachedTiles, uncached)
+      saveNodes(nodes)
+      this._addNodesToMap(nodes)
+    } finally {
+      this.spinnerTarget.classList.remove("visible")
+    }
   }
 
   _addNodesToMap(nodes) {

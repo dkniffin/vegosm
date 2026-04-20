@@ -5,4 +5,3 @@
 - Refactor code
 - Link to more external apps, like google maps
 - Dark mode
-- Add a spinner while data is loading
