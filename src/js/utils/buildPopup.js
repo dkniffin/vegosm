@@ -28,7 +28,7 @@ export default function buildPopup(node) {
   }
 
   if (nodeData["website"]) {
-    popupHtml += `<a href="tel:${nodeData["website"]}">${nodeData["website"]}</a><br />`
+    popupHtml += `<a href="${nodeData["website"]}">${nodeData["website"]}</a><br />`
   }
 
   if (nodeData["openHours"]) {
