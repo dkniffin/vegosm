@@ -20,6 +20,7 @@ import { CUISINES, VALID_CUISINES, CACHE_DURATION_MS } from "../config"
 import buildPopup from "../utils/buildPopup"
 import { loadNodes, saveNodes } from "../utils/nodeCache"
 import { fetchFromOverpass } from "../utils/overpass"
+import { debounce } from "../utils/debounce"
 
 export default class extends Controller {
   static targets = [ "map", "sidebar" ]
@@ -30,7 +31,7 @@ export default class extends Controller {
     this._nodeIds = []
     this._addNodesToMap(loadNodes(CACHE_DURATION_MS))
 
-    const debouncedUpdate = this._debounce(this._updateFromFilters.bind(this), 500)
+    const debouncedUpdate = debounce(this._updateFromFilters.bind(this), 500)
     this.map.addEventListener("moveend", debouncedUpdate)
     this.map.addEventListener("zoomend", debouncedUpdate)
     this.map.addEventListener("moveend", this._updateUrlParams.bind(this))
@@ -39,15 +40,7 @@ export default class extends Controller {
     this._updateFromFilters()
   }
 
-  _debounce(fn, delay) {
-    let timer
-    return function(...args) {
-      clearTimeout(timer)
-      timer = setTimeout(() => fn.apply(this, args), delay)
-    }
-  }
-
-  _setupMap() {
+_setupMap() {
     const urlParams = new URLSearchParams(window.location.search)
     const initialLat = parseFloat(urlParams.get('lat')) || 51.505
     const initialLng = parseFloat(urlParams.get('lng')) || -0.10
