@@ -16,8 +16,9 @@ import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
 import "leaflet-sidebar"
 import "leaflet-sidebar/src/L.Control.Sidebar.css"
 
-import { CUISINES, VALID_CUISINES } from "../config"
+import { CUISINES, VALID_CUISINES, CACHE_DURATION_MS } from "../config"
 import buildPopup from "../utils/buildPopup"
+import { loadNodes, saveNodes } from "../utils/nodeCache"
 
 export default class extends Controller {
   static targets = [ "map", "sidebar" ]
@@ -26,6 +27,7 @@ export default class extends Controller {
     this._setupMap()
 
     this._nodeIds = []
+    this._addNodesToMap(loadNodes(CACHE_DURATION_MS))
 
     const debouncedUpdate = this._debounce(this._updateFromFilters.bind(this), 500)
     this.map.addEventListener("moveend", debouncedUpdate)
@@ -85,29 +87,26 @@ export default class extends Controller {
 
   async _updateFromFilters() {
     const query = '(node["diet:vegan"]["diet:vegan"!="no"]({{bbox}});node["diet:vegetarian"]["diet:vegetarian"!="no"]({{bbox}}););out geom;'
-    const results = await this._fetchFromOverpass(query)
+    const nodes = await this._fetchFromOverpass(query)
+    saveNodes(nodes)
+    this._addNodesToMap(nodes)
+  }
 
-    results.forEach((node) => {
+  _addNodesToMap(nodes) {
+    nodes.forEach((node) => {
       if (this._nodeIds.includes(node.id)) { return }
 
       const color = this._markerColorFor(node.tags)
       const layer = this._layerFor(node.tags)
       const cuisineTag = node.tags["cuisine"]
-      let icon
-      if (cuisineTag && CUISINES.hasOwnProperty(cuisineTag)) {
-        icon = CUISINES[cuisineTag]["icon"]
-      } else {
-        icon = "utensils"
-      }
+      const icon = (cuisineTag && CUISINES.hasOwnProperty(cuisineTag))
+        ? CUISINES[cuisineTag]["icon"]
+        : "utensils"
 
       const popupContents = buildPopup(node)
 
       L.marker([node.lat, node.lon], {
-        icon: L.AwesomeMarkers.icon({
-          prefix: "fa",
-          icon: icon,
-          markerColor: color
-        }),
+        icon: L.AwesomeMarkers.icon({ prefix: "fa", icon, markerColor: color }),
         tags: [node.tags.cuisine]
       }).addTo(layer).on("click", function () {
         this.sidebar.setContent(popupContents)

@@ -14,3 +14,5 @@ export const CUISINES = {
 }
 
 export const VALID_CUISINES = Object.keys(CUISINES)
+
+export const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000
