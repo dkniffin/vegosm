@@ -24,14 +24,24 @@ export default class extends Controller {
 
   initialize() {
     this._setupMap()
-    this._updateFromFilters()
 
     this._nodeIds = []
 
-    this.map.addEventListener("moveend", this._updateFromFilters.bind(this))
-    this.map.addEventListener("zoomend", this._updateFromFilters.bind(this))
+    const debouncedUpdate = this._debounce(this._updateFromFilters.bind(this), 500)
+    this.map.addEventListener("moveend", debouncedUpdate)
+    this.map.addEventListener("zoomend", debouncedUpdate)
     this.map.addEventListener("moveend", this._updateUrlParams.bind(this))
     this.map.addEventListener("zoomend", this._updateUrlParams.bind(this))
+
+    this._updateFromFilters()
+  }
+
+  _debounce(fn, delay) {
+    let timer
+    return function(...args) {
+      clearTimeout(timer)
+      timer = setTimeout(() => fn.apply(this, args), delay)
+    }
   }
 
   _setupMap() {
