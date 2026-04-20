@@ -37,7 +37,12 @@ export default function prettyOpenHours(tags) {
   if (!tags["opening_hours"]) { return }
   let prettyOpenHours = {}
 
-  const oh = new OpeningHours(tags["opening_hours"], {}, { 'locale': navigator.language })
+  let oh
+  try {
+    oh = new OpeningHours(tags["opening_hours"], null, { 'locale': navigator.language })
+  } catch {
+    return
+  }
 
   prettyOpenHours["now"] = oh.getState()
 
