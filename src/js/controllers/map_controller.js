@@ -19,6 +19,7 @@ import "leaflet-sidebar/src/L.Control.Sidebar.css"
 import { CUISINES, VALID_CUISINES, CACHE_DURATION_MS } from "../config"
 import buildPopup from "../utils/buildPopup"
 import { loadNodes, saveNodes } from "../utils/nodeCache"
+import { fetchFromOverpass } from "../utils/overpass"
 
 export default class extends Controller {
   static targets = [ "map", "sidebar" ]
@@ -87,7 +88,7 @@ export default class extends Controller {
 
   async _updateFromFilters() {
     const query = '(node["diet:vegan"]["diet:vegan"!="no"]({{bbox}});node["diet:vegetarian"]["diet:vegetarian"!="no"]({{bbox}}););out geom;'
-    const nodes = await this._fetchFromOverpass(query)
+    const nodes = await fetchFromOverpass(query, this.map.getBounds())
     saveNodes(nodes)
     this._addNodesToMap(nodes)
   }
@@ -117,31 +118,7 @@ export default class extends Controller {
     })
   }
 
-  _buildOverpassUrlFromQuery(query) {
-    const bounds = this.map.getBounds()
-    const bbox = [
-      bounds.getSouth(),
-      bounds.getWest(),
-      bounds.getNorth(),
-      bounds.getEast()
-    ].join(',');
-
-    query = query.replace(/(\/\/.*)/g, '')
-    query = query.replace(/\n/g, '')
-    query = query.replace(/(\{\{bbox\}\})/g, bbox)
-
-    return `https://overpass-api.de/api/interpreter?data=[out:json];${query}`
-  }
-
-  async _fetchFromOverpass(query) {
-    const url = this._buildOverpassUrlFromQuery(query)
-    const response = await fetch(url)
-    if (!response.ok) { throw new Error(`Response status: ${response.status}`) }
-    const results = await response.json()
-    return results["elements"]
-  }
-
-  _markerColorFor(tags) {
+_markerColorFor(tags) {
     if (tags["diet:vegan"] == "only") {
       return "green"
     } else if (tags["diet:vegetarian"] == "only") {
