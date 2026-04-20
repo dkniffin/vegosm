@@ -1,5 +1,19 @@
+const MIRRORS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter'
+]
+
 const MAX_RETRIES = 3
 const RETRY_BASE_DELAY_MS = 1000
+
+let _mirrorIndex = 0
+
+function _nextMirror() {
+  const mirror = MIRRORS[_mirrorIndex % MIRRORS.length]
+  _mirrorIndex++
+  return mirror
+}
 
 export async function fetchFromOverpass(query, { south, west, north, east }) {
   const bbox = [south, west, north, east].join(',')
@@ -9,14 +23,15 @@ export async function fetchFromOverpass(query, { south, west, north, east }) {
     .replace(/\n/g, '')
     .replace(/(\{\{bbox\}\})/g, bbox)
 
-  const url = `https://overpass-api.de/api/interpreter?data=[out:json];${prepared}`
-
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const url = `${_nextMirror()}?data=[out:json];${prepared}`
     const response = await fetch(url)
 
-    if (response.status === 429) {
-      if (attempt === MAX_RETRIES) throw new Error('Overpass rate limit exceeded, max retries reached')
-      await _sleep(RETRY_BASE_DELAY_MS * 2 ** attempt)
+    if (response.status === 429 || response.status === 504) {
+      if (attempt === MAX_RETRIES) throw new Error(`Overpass error ${response.status}, max retries reached`)
+      // If we haven't cycled through all mirrors yet, try the next one immediately
+      if (attempt < MIRRORS.length - 1) continue
+      await _sleep(RETRY_BASE_DELAY_MS * 2 ** (attempt - MIRRORS.length + 1))
       continue
     }
 
