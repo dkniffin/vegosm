@@ -16,7 +16,7 @@ import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
 import "leaflet-sidebar"
 import "leaflet-sidebar/src/L.Control.Sidebar.css"
 
-import { CUISINES, VALID_CUISINES, CACHE_DURATION_MS } from "../config"
+import { CUISINES, VALID_CUISINES, CACHE_DURATION_MS, OVERPASS_QUERY } from "../config"
 import buildPopup from "../utils/buildPopup"
 import { loadNodes, saveNodes } from "../utils/nodeCache"
 import { fetchFromOverpass } from "../utils/overpass"
@@ -40,18 +40,29 @@ export default class extends Controller {
     this._updateFromFilters()
   }
 
-_setupMap() {
+  _setupMap() {
     const urlParams = new URLSearchParams(window.location.search)
     const initialLat = parseFloat(urlParams.get('lat')) || 51.505
     const initialLng = parseFloat(urlParams.get('lng')) || -0.10
     const initialZoom = parseInt(urlParams.get('zoom')) || 13
     this.map = L.map(this.mapTarget).setView([initialLat, initialLng], initialZoom)
 
+    this._setupLayers()
+    this._setupControls()
+  }
+
+  _setupLayers() {
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(this.map)
 
+    this.veganLayer = L.layerGroup().addTo(this.map)
+    this.vegetarianLayer = L.layerGroup().addTo(this.map)
+    this.friendlyLayer = L.layerGroup().addTo(this.map)
+  }
+
+  _setupControls() {
     new LocateControl({ keepCurrentZoomLevel: true }).addTo(this.map)
 
     L.control.tagFilterButton({
@@ -60,18 +71,11 @@ _setupMap() {
       filterOnEveryClick: true
     }).addTo(this.map)
 
-    this.veganLayer = L.layerGroup().addTo(this.map)
-    this.vegetarianLayer = L.layerGroup().addTo(this.map)
-    this.friendlyLayer = L.layerGroup().addTo(this.map)
-
-    this.layerControl = L.control.layers(
-      undefined,
-      {
-        "Vegan only": this.veganLayer,
-        "Vegetarian only": this.vegetarianLayer,
-        "Vegan friendly": this.friendlyLayer
-      }
-    ).addTo(this.map)
+    L.control.layers(undefined, {
+      "Vegan only": this.veganLayer,
+      "Vegetarian only": this.vegetarianLayer,
+      "Vegan friendly": this.friendlyLayer
+    }).addTo(this.map)
 
     this.sidebar = L.control.sidebar(this.sidebarTarget, {
       position: 'left',
@@ -80,8 +84,7 @@ _setupMap() {
   }
 
   async _updateFromFilters() {
-    const query = '(node["diet:vegan"]["diet:vegan"!="no"]({{bbox}});node["diet:vegetarian"]["diet:vegetarian"!="no"]({{bbox}}););out geom;'
-    const nodes = await fetchFromOverpass(query, this.map.getBounds())
+    const nodes = await fetchFromOverpass(OVERPASS_QUERY, this.map.getBounds())
     saveNodes(nodes)
     this._addNodesToMap(nodes)
   }
@@ -89,46 +92,32 @@ _setupMap() {
   _addNodesToMap(nodes) {
     nodes.forEach((node) => {
       if (this._nodeIds.includes(node.id)) { return }
-
-      const color = this._markerColorFor(node.tags)
-      const layer = this._layerFor(node.tags)
-      const cuisineTag = node.tags["cuisine"]
-      const icon = (cuisineTag && CUISINES.hasOwnProperty(cuisineTag))
-        ? CUISINES[cuisineTag]["icon"]
-        : "utensils"
-
-      const popupContents = buildPopup(node)
-
-      L.marker([node.lat, node.lon], {
-        icon: L.AwesomeMarkers.icon({ prefix: "fa", icon, markerColor: color }),
-        tags: [node.tags.cuisine]
-      }).addTo(layer).on("click", function () {
-        this.sidebar.setContent(popupContents)
-        this.sidebar.toggle()
-      }.bind(this))
-
+      this._createMarker(node).addTo(this._dietInfo(node.tags).layer)
       this._nodeIds.push(node.id)
     })
   }
 
-_markerColorFor(tags) {
-    if (tags["diet:vegan"] == "only") {
-      return "green"
-    } else if (tags["diet:vegetarian"] == "only") {
-      return "purple"
-    } else {
-      return "blue"
-    }
+  _createMarker(node) {
+    const { color } = this._dietInfo(node.tags)
+    const cuisineTag = node.tags["cuisine"]
+    const icon = (cuisineTag && CUISINES.hasOwnProperty(cuisineTag))
+      ? CUISINES[cuisineTag]["icon"]
+      : "utensils"
+    const popupContents = buildPopup(node)
+
+    return L.marker([node.lat, node.lon], {
+      icon: L.AwesomeMarkers.icon({ prefix: "fa", icon, markerColor: color }),
+      tags: [cuisineTag]
+    }).on("click", () => {
+      this.sidebar.setContent(popupContents)
+      this.sidebar.toggle()
+    })
   }
 
-  _layerFor(tags) {
-    if (tags["diet:vegan"] == "only") {
-      return this.veganLayer
-    } else if (tags["diet:vegetarian"] == "only") {
-      return this.vegetarianLayer
-    } else {
-      return this.friendlyLayer
-    }
+  _dietInfo(tags) {
+    if (tags["diet:vegan"] === "only")       return { color: "green",  layer: this.veganLayer }
+    if (tags["diet:vegetarian"] === "only")  return { color: "purple", layer: this.vegetarianLayer }
+    return                                          { color: "blue",   layer: this.friendlyLayer }
   }
 
   _updateUrlParams() {
@@ -140,7 +129,6 @@ _markerColorFor(tags) {
     params.set('lng', center.lng.toFixed(5))
     params.set('zoom', zoom)
 
-    const newUrl = `${window.location.pathname}?${params.toString()}`
-    history.replaceState(null, '', newUrl)
+    history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
   }
 }
