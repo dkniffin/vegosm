@@ -4,4 +4,3 @@
 - Add filter for gluten free
 - Refactor code
 - Link to more external apps, like google maps
-- Dark mode

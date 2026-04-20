@@ -28,6 +28,7 @@ export default class extends Controller {
 
   initialize() {
     this._setupMap()
+    this._setupDarkMode()
 
     this._nodeIds = []
     this._cachedTiles = loadTiles(CACHE_DURATION_MS)
@@ -54,10 +55,15 @@ export default class extends Controller {
   }
 
   _setupLayers() {
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    this._lightTileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(this.map)
+    })
+    this._darkTileLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    })
+    this._lightTileLayer.addTo(this.map)
 
     this.veganLayer = L.layerGroup().addTo(this.map)
     this.vegetarianLayer = L.layerGroup().addTo(this.map)
@@ -83,6 +89,44 @@ export default class extends Controller {
       position: 'left',
       autoPan: false
     }).addTo(this.map)
+  }
+
+  _setupDarkMode() {
+    // override: null = auto, true = force dark, false = force light
+    this._darkOverride = null
+    this._systemDark = window.matchMedia("(prefers-color-scheme: dark)")
+
+    this._systemDark.addEventListener("change", () => {
+      if (this._darkOverride === null) this._applyDarkMode(this._systemDark.matches)
+    })
+
+    const icons = { auto: "fa-circle-half-stroke", dark: "fa-moon", light: "fa-sun" }
+    this._darkModeButton = L.easyButton(`<i class="fa-solid ${icons.auto}"></i>`, () => {
+      if (this._darkOverride === null) {
+        this._darkOverride = true
+      } else if (this._darkOverride === true) {
+        this._darkOverride = false
+      } else {
+        this._darkOverride = null
+      }
+      const isDark = this._darkOverride === null ? this._systemDark.matches : this._darkOverride
+      const icon = this._darkOverride === null ? icons.auto : this._darkOverride ? icons.dark : icons.light
+      this._darkModeButton.button.querySelector("i").className = `fa-solid ${icon}`
+      this._applyDarkMode(isDark)
+    }).addTo(this.map)
+
+    this._applyDarkMode(this._systemDark.matches)
+  }
+
+  _applyDarkMode(dark) {
+    document.body.classList.toggle("dark", dark)
+    if (dark) {
+      this._lightTileLayer.remove()
+      this._darkTileLayer.addTo(this.map)
+    } else {
+      this._darkTileLayer.remove()
+      this._lightTileLayer.addTo(this.map)
+    }
   }
 
   async _updateFromFilters() {

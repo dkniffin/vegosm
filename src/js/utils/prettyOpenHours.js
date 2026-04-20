@@ -44,7 +44,11 @@ export default function prettyOpenHours(tags) {
     return
   }
 
-  prettyOpenHours["now"] = oh.getState()
+  try {
+    prettyOpenHours["now"] = oh.getState()
+  } catch {
+    return
+  }
 
   const dayOfWeekMap = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
@@ -55,7 +59,13 @@ export default function prettyOpenHours(tags) {
     const end = new Date(date.setHours(23, 59))
     const dayOfWeek = dayOfWeekMap[date.getDay()]
 
-    const intervals = oh.getOpenIntervals(start, end)
+    let intervals
+    try {
+      intervals = oh.getOpenIntervals(start, end)
+    } catch {
+      continue
+    }
+
     if (intervals.length == 0) {
       prettyOpenHours[dayOfWeek] = "Closed"
     } else {

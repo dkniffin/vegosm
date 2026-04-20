@@ -20,10 +20,10 @@
   }
 
   .currently-open {
-    color: green;
+    color: var(--open-color, green);
   }
 
   .currently-closed {
-    color: red;
+    color: var(--closed-color, red);
   }
 }
