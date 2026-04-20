@@ -1,13 +1,8 @@
 const MAX_RETRIES = 3
 const RETRY_BASE_DELAY_MS = 1000
 
-export async function fetchFromOverpass(query, bounds) {
-  const bbox = [
-    bounds.getSouth(),
-    bounds.getWest(),
-    bounds.getNorth(),
-    bounds.getEast()
-  ].join(',')
+export async function fetchFromOverpass(query, { south, west, north, east }) {
+  const bbox = [south, west, north, east].join(',')
 
   const prepared = query
     .replace(/(\/\/.*)/g, '')

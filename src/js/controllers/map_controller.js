@@ -19,6 +19,7 @@ import "leaflet-sidebar/src/L.Control.Sidebar.css"
 import { CUISINES, VALID_CUISINES, CACHE_DURATION_MS, OVERPASS_QUERY } from "../config"
 import buildPopup from "../utils/buildPopup"
 import { loadNodes, saveNodes } from "../utils/nodeCache"
+import { loadTiles, saveTiles, getUncachedTiles, tilesBbox } from "../utils/tileCache"
 import { fetchFromOverpass } from "../utils/overpass"
 import { debounce } from "../utils/debounce"
 
@@ -29,6 +30,7 @@ export default class extends Controller {
     this._setupMap()
 
     this._nodeIds = []
+    this._cachedTiles = loadTiles(CACHE_DURATION_MS)
     this._addNodesToMap(loadNodes(CACHE_DURATION_MS))
 
     const debouncedUpdate = debounce(this._updateFromFilters.bind(this), 500)
@@ -84,7 +86,11 @@ export default class extends Controller {
   }
 
   async _updateFromFilters() {
-    const nodes = await fetchFromOverpass(OVERPASS_QUERY, this.map.getBounds())
+    const uncached = getUncachedTiles(this.map.getBounds(), this._cachedTiles)
+    if (uncached.length === 0) return
+
+    const nodes = await fetchFromOverpass(OVERPASS_QUERY, tilesBbox(uncached))
+    this._cachedTiles = saveTiles(this._cachedTiles, uncached)
     saveNodes(nodes)
     this._addNodesToMap(nodes)
   }
