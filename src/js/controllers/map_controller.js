@@ -170,7 +170,7 @@ export default class extends Controller {
       isChain: this._isChain(node.tags)
     }).on("click", () => {
       this.sidebar.setContent(popupContents)
-      this.sidebar.toggle()
+      this.sidebar.show()
     })
   }
 
