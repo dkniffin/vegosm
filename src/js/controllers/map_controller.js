@@ -7,13 +7,12 @@ import "leaflet.locatecontrol/dist/L.Control.Locate.min.css"
 
 import "leaflet-easybutton"
 import "leaflet-easybutton/src/easy-button.css"
-import "leaflet-tag-filter-button/src/leaflet-tag-filter-button"
-import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
-
 import "leaflet-sidebar"
 import "leaflet-sidebar/src/L.Control.Sidebar.css"
+import "../../css/cuisine-filter.css"
 
 import { CUISINES, DEFAULT_ICON, VALID_CUISINES, CACHE_DURATION_MS, OVERPASS_QUERY } from "../config"
+import CuisineFilter from "../controls/CuisineFilter"
 import createMarkerIcon from "../utils/createMarkerIcon"
 import buildPopup from "../utils/buildPopup"
 import { loadNodes, saveNodes } from "../utils/nodeCache"
@@ -75,10 +74,9 @@ export default class extends Controller {
   _setupControls() {
     new LocateControl({ keepCurrentZoomLevel: true }).addTo(this.map)
 
-    L.control.tagFilterButton({
-      data: VALID_CUISINES,
-      icon: "fa-utensils",
-      filterOnEveryClick: true
+    new CuisineFilter({
+      cuisines: VALID_CUISINES,
+      layers: [this.veganLayer, this.vegetarianLayer, this.friendlyLayer]
     }).addTo(this.map)
 
     L.control.layers(undefined, {

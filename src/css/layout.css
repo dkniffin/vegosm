@@ -82,8 +82,7 @@ body.dark {
   .leaflet-control-layers-toggle,
   .leaflet-bar a,
   .easy-button-button,
-  .leaflet-control-locate a,
-  .tag-filter-tags-container {
+  .leaflet-control-locate a {
     background-color: var(--control-bg) !important;
     color: var(--fg) !important;
     border-color: var(--border) !important;
@@ -115,6 +114,29 @@ body.dark {
     background-color: var(--control-bg) !important;
     color: var(--fg) !important;
     border-color: var(--border) !important;
+  }
+
+  .cuisine-filter-dropdown {
+    background-color: var(--control-bg);
+    border-color: var(--border);
+    color: var(--fg);
+  }
+
+  .cuisine-filter-header {
+    border-bottom-color: var(--border);
+  }
+
+  .cuisine-filter-all-btn,
+  .cuisine-filter-none-btn {
+    background-color: var(--control-bg);
+    color: var(--fg);
+    border-color: var(--border);
+
+    &:hover { filter: brightness(1.2); }
+  }
+
+  .cuisine-filter-item:hover {
+    background-color: color-mix(in srgb, var(--control-bg) 80%, var(--fg));
   }
 
   .leaflet-sidebar {
