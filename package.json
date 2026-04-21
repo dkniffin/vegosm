@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
+    "@material-design-icons/svg": "^0.14.15",
     "leaflet": "^1.9.4",
     "leaflet-sidebar": "^0.2.4",
     "leaflet-tag-filter-button": "^0.0.5",

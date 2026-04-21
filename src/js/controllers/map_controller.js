@@ -2,9 +2,6 @@ import { Controller } from "@hotwired/stimulus"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 
-import "leaflet.awesome-markers/dist/leaflet.awesome-markers"
-import "leaflet.awesome-markers/dist/leaflet.awesome-markers.css"
-
 import { LocateControl } from "leaflet.locatecontrol"
 import "leaflet.locatecontrol/dist/L.Control.Locate.min.css"
 
@@ -16,7 +13,8 @@ import "leaflet-tag-filter-button/src/leaflet-tag-filter-button.css"
 import "leaflet-sidebar"
 import "leaflet-sidebar/src/L.Control.Sidebar.css"
 
-import { CUISINES, VALID_CUISINES, CACHE_DURATION_MS, OVERPASS_QUERY } from "../config"
+import { CUISINES, DEFAULT_ICON, VALID_CUISINES, CACHE_DURATION_MS, OVERPASS_QUERY } from "../config"
+import createMarkerIcon from "../utils/createMarkerIcon"
 import buildPopup from "../utils/buildPopup"
 import { loadNodes, saveNodes } from "../utils/nodeCache"
 import { loadTiles, saveTiles, getUncachedTiles, tilesBbox } from "../utils/tileCache"
@@ -155,13 +153,11 @@ export default class extends Controller {
   _createMarker(node) {
     const { color } = this._dietInfo(node.tags)
     const cuisineTag = node.tags["cuisine"]
-    const icon = (cuisineTag && CUISINES.hasOwnProperty(cuisineTag))
-      ? CUISINES[cuisineTag]["icon"]
-      : "utensils"
+    const iconUrl = CUISINES[cuisineTag]?.icon ?? DEFAULT_ICON
     const popupContents = buildPopup(node)
 
     return L.marker([node.lat, node.lon], {
-      icon: L.AwesomeMarkers.icon({ prefix: "fa", icon, markerColor: color }),
+      icon: createMarkerIcon(iconUrl, color),
       tags: [cuisineTag]
     }).on("click", () => {
       this.sidebar.setContent(popupContents)
@@ -170,9 +166,9 @@ export default class extends Controller {
   }
 
   _dietInfo(tags) {
-    if (tags["diet:vegan"] === "only")       return { color: "green",  layer: this.veganLayer }
-    if (tags["diet:vegetarian"] === "only")  return { color: "purple", layer: this.vegetarianLayer }
-    return                                          { color: "blue",   layer: this.friendlyLayer }
+    if (tags["diet:vegan"] === "only")       return { color: "#388e3c", layer: this.veganLayer }
+    if (tags["diet:vegetarian"] === "only")  return { color: "#7b1fa2", layer: this.vegetarianLayer }
+    return                                          { color: "#1565c0", layer: this.friendlyLayer }
   }
 
   _updateUrlParams() {

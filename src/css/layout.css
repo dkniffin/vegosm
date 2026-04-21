@@ -1,3 +1,21 @@
+.map-pin {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.map-pin-icon {
+  width: 16px;
+  height: 16px;
+  transform: rotate(45deg);
+  filter: brightness(0) invert(1);
+}
+
 #map {
   position: absolute;
   top: 0;

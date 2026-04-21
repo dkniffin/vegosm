@@ -1,6 +1,4 @@
 - Add filter for hiding chains (via brand=*, I think)
-- Add more icons for cuisines. Will likely need to involve custom imported icons, as the standard datasets don't have them
 - Look into domain names
 - Add filter for gluten free
-- Refactor code
 - Link to more external apps, like google maps
