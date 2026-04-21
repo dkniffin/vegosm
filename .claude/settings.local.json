@@ -5,7 +5,8 @@
       "WebFetch(domain:tabler.io)",
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:unpkg.com)"
+      "WebFetch(domain:unpkg.com)",
+      "WebFetch(domain:www.happycow.net)"
     ]
   }
 }

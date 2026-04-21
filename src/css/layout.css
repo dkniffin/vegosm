@@ -166,6 +166,42 @@ body.dark {
 
     a { color: var(--fg) !important; }
   }
+
+  .shop-popup .popup-link img {
+    filter: invert(1);
+  }
+
+  .shop-popup .popup-link.happycow-link img,
+  .shop-popup .popup-link.osm-link img,
+  .shop-popup .popup-link.gmaps-link img,
+  .shop-popup .popup-link.instagram-link img,
+  .shop-popup .popup-link.facebook-link img {
+    filter: none;
+  }
+
+  .shop-popup .popup-badge-yes {
+    background: #1b3a1e;
+    color: #81c784;
+    border-color: #2e7d32;
+  }
+
+  .shop-popup .popup-badge-no {
+    background: #3b1a1a;
+    color: #ef9a9a;
+    border-color: #c62828;
+  }
+
+  .shop-popup .popup-badge-partial {
+    background: #3b2f00;
+    color: #ffe082;
+    border-color: #f57f17;
+  }
+
+  .shop-popup .popup-badge-unknown {
+    background: #2a2a2a;
+    color: #aaa;
+    border-color: #444;
+  }
 }
 
 body { /* This is to increase specificity */

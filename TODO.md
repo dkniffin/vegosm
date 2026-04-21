@@ -1,3 +1,2 @@
 - Look into domain names
 - Add filter for gluten free
-- Link to more external apps, like google maps

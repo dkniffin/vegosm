@@ -4,6 +4,10 @@ function osmUrl(node) {
   return `https://www.openstreetmap.org/node/${node.id}`
 }
 
+function happyCowUrl(node) {
+  return `https://www.happycow.net/searchmap?s=3&lat=${node.lat}&lng=${node.lon}&zoom=16`
+}
+
 function address(tags) {
   const housenumber = tags["addr:housenumber"]
   const street = tags["addr:street"]
@@ -11,7 +15,6 @@ function address(tags) {
   const state = tags["addr:state"]
   const postcode = tags["addr:postcode"]
 
-  // If one or both of these are not present, we can't form a valid address
   if (!housenumber || !street) { return }
 
   let addressString = `${housenumber} ${street}`
@@ -21,6 +24,12 @@ function address(tags) {
   if (postcode) { addressString += ` ${postcode}` }
 
   return addressString
+}
+
+function socialUrl(value, baseUrl) {
+  if (!value) return undefined
+  if (value.startsWith("http://") || value.startsWith("https://")) return value
+  return `${baseUrl}${value}`
 }
 
 export default function prettyOsmNode(node) {
@@ -37,9 +46,16 @@ export default function prettyOsmNode(node) {
       ...prettyObject,
       name: tags["name"],
       osmUrl: osmUrl(node),
+      happyCowUrl: happyCowUrl(node),
       address: address(tags),
       phone: tags["phone"],
       website: tags["website"],
+      email: tags["email"] || tags["contact:email"],
+      instagram: socialUrl(tags["contact:instagram"], "https://instagram.com/"),
+      facebook: socialUrl(tags["contact:facebook"], "https://facebook.com/"),
+      wheelchair: tags["wheelchair"],
+      takeaway: tags["takeaway"],
+      delivery: tags["delivery"],
       openHours: prettyOpenHours(tags),
       osmTags: tags
     }
