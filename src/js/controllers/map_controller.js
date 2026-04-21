@@ -24,7 +24,7 @@ export default class extends Controller {
   static targets = ["map", "sidebar", "spinner"]
 
   initialize() {
-    this._hideChainsActive = false
+    this._hideChainsActive = localStorage.getItem("hideChainsActive") === "true"
     this._chainsHidden = new Map()
     this._nodeIds = []
 
@@ -99,7 +99,8 @@ export default class extends Controller {
 
   _setupDarkMode() {
     // override: null = auto, true = force dark, false = force light
-    this._darkOverride = null
+    const stored = localStorage.getItem("darkOverride")
+    this._darkOverride = stored === null ? null : stored === "true"
     this._systemDark = window.matchMedia("(prefers-color-scheme: dark)")
 
     this._systemDark.addEventListener("change", () => {
@@ -107,7 +108,8 @@ export default class extends Controller {
     })
 
     const icons = { auto: "fa-circle-half-stroke", dark: "fa-moon", light: "fa-sun" }
-    this._darkModeButton = L.easyButton(`<i class="fa-solid ${icons.auto}"></i>`, () => {
+    const initialIcon = this._darkOverride === null ? icons.auto : this._darkOverride ? icons.dark : icons.light
+    this._darkModeButton = L.easyButton(`<i class="fa-solid ${initialIcon}"></i>`, () => {
       if (this._darkOverride === null) {
         this._darkOverride = true
       } else if (this._darkOverride === true) {
@@ -115,13 +117,15 @@ export default class extends Controller {
       } else {
         this._darkOverride = null
       }
+      localStorage.setItem("darkOverride", this._darkOverride)
       const isDark = this._darkOverride === null ? this._systemDark.matches : this._darkOverride
       const icon = this._darkOverride === null ? icons.auto : this._darkOverride ? icons.dark : icons.light
       this._darkModeButton.button.querySelector("i").className = `fa-solid ${icon}`
       this._applyDarkMode(isDark)
     }).addTo(this.map)
 
-    this._applyDarkMode(this._systemDark.matches)
+    const isDark = this._darkOverride === null ? this._systemDark.matches : this._darkOverride
+    this._applyDarkMode(isDark)
   }
 
   _applyDarkMode(dark) {
@@ -194,9 +198,12 @@ export default class extends Controller {
   _setupChainFilter() {
     this._chainFilterButton = L.easyButton('<i class="fa-solid fa-trademark chain-filter-icon"></i>', () => {
       this._hideChainsActive = !this._hideChainsActive
+      localStorage.setItem("hideChainsActive", this._hideChainsActive)
       this._chainFilterButton.button.classList.toggle("chain-filter-active", this._hideChainsActive)
       this._applyChainFilter()
     }).addTo(this.map)
+
+    this._chainFilterButton.button.classList.toggle("chain-filter-active", this._hideChainsActive)
   }
 
   _applyChainFilter() {
