@@ -12,6 +12,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "dotenv": "^17.4.2",
     "esbuild": "0.25.9",
     "http-server": "^14.1.1"
   },
