@@ -21,13 +21,15 @@ import { fetchFromOverpass } from "../utils/overpass"
 import { debounce } from "../utils/debounce"
 
 export default class extends Controller {
-  static targets = [ "map", "sidebar", "spinner" ]
+  static targets = ["map", "sidebar", "spinner"]
 
   initialize() {
+    this._hideChainsActive = false
+    this._chainsHidden = new Map()
+    this._nodeIds = []
+
     this._setupMap()
     this._setupDarkMode()
-
-    this._nodeIds = []
     this._cachedTiles = loadTiles(CACHE_DURATION_MS)
     this._addNodesToMap(loadNodes(CACHE_DURATION_MS))
 
@@ -89,6 +91,8 @@ export default class extends Controller {
       position: 'left',
       autoPan: false
     }).addTo(this.map)
+
+    this._setupChainFilter()
   }
 
   _setupDarkMode() {
@@ -150,6 +154,7 @@ export default class extends Controller {
       this._createMarker(node).addTo(this._dietInfo(node.tags).layer)
       this._nodeIds.push(node.id)
     })
+    if (this._hideChainsActive) this._applyChainFilter()
   }
 
   _createMarker(node) {
@@ -161,17 +166,48 @@ export default class extends Controller {
     return L.marker([node.lat, node.lon], {
       icon: createMarkerIcon(iconUrl, color),
       pane,
-      tags: [cuisineTag]
+      tags: [cuisineTag],
+      isChain: this._isChain(node.tags)
     }).on("click", () => {
       this.sidebar.setContent(popupContents)
       this.sidebar.toggle()
     })
   }
 
+  _isChain(tags) {
+    return !!tags["brand:wikidata"]
+  }
+
+  _setupChainFilter() {
+    this._chainFilterButton = L.easyButton('<i class="fa-solid fa-trademark chain-filter-icon"></i>', () => {
+      this._hideChainsActive = !this._hideChainsActive
+      this._chainFilterButton.button.classList.toggle("chain-filter-active", this._hideChainsActive)
+      this._applyChainFilter()
+    }).addTo(this.map)
+  }
+
+  _applyChainFilter() {
+    for (const [marker, layer] of this._chainsHidden) layer.addLayer(marker)
+    this._chainsHidden.clear()
+
+    if (!this._hideChainsActive) return
+
+    const toHide = []
+    for (const layer of [this.veganLayer, this.vegetarianLayer, this.friendlyLayer]) {
+      layer.eachLayer(marker => {
+        if (marker.options.isChain) toHide.push([marker, layer])
+      })
+    }
+    for (const [marker, layer] of toHide) {
+      layer.removeLayer(marker)
+      this._chainsHidden.set(marker, layer)
+    }
+  }
+
   _dietInfo(tags) {
-    if (tags["diet:vegan"] === "only")       return { color: "#388e3c", layer: this.veganLayer,        pane: "veganPane" }
-    if (tags["diet:vegetarian"] === "only")  return { color: "#7b1fa2", layer: this.vegetarianLayer,   pane: "vegetarianPane" }
-    return                                          { color: "#1565c0", layer: this.friendlyLayer,     pane: "friendlyPane" }
+    if (tags["diet:vegan"] === "only") return { color: "#388e3c", layer: this.veganLayer, pane: "veganPane" }
+    if (tags["diet:vegetarian"] === "only") return { color: "#7b1fa2", layer: this.vegetarianLayer, pane: "vegetarianPane" }
+    return { color: "#1565c0", layer: this.friendlyLayer, pane: "friendlyPane" }
   }
 
   _updateUrlParams() {

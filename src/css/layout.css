@@ -16,6 +16,22 @@
   filter: brightness(0) invert(1);
 }
 
+.chain-filter-icon {
+  position: relative;
+}
+
+.chain-filter-active .chain-filter-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;
+  height: 2px;
+  background: currentColor;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  transform-origin: center;
+}
+
 #map {
   position: absolute;
   top: 0;
