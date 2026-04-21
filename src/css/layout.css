@@ -40,6 +40,41 @@
   left: 0;
 }
 
+.leaflet-control-attribution {
+  font-size: 0 !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.leaflet-control-attribution::before {
+  content: 'ⓘ';
+  font-size: 13px;
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+}
+
+.leaflet-control-attribution .leaflet-attribution-flag {
+  display: none !important;
+}
+
+.leaflet-control-attribution.attribution-expanded {
+  font-size: 11px !important;
+  white-space: normal;
+  cursor: default;
+}
+
+.leaflet-control-attribution.attribution-expanded .leaflet-attribution-flag {
+  display: inline !important;
+}
+
+@media (max-width: 767px) {
+  .leaflet-control-attribution::before {
+    font-size: 18px;
+    width: 26px;
+  }
+}
+
 .map-spinner {
   display: none;
   position: absolute;

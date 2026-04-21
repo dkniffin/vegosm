@@ -94,6 +94,7 @@ export default class extends Controller {
     }).addTo(this.map)
 
     this._setupChainFilter()
+    this._setupAttribution()
   }
 
   _setupDarkMode() {
@@ -172,6 +173,17 @@ export default class extends Controller {
     }).on("click", () => {
       this.sidebar.setContent(popupContents)
       this.sidebar.show()
+    })
+  }
+
+  _setupAttribution() {
+    const el = this.map.attributionControl.getContainer()
+    el.addEventListener("click", (e) => {
+      el.classList.toggle("attribution-expanded")
+      e.stopPropagation()
+    })
+    this.map.getContainer().addEventListener("click", () => {
+      el.classList.remove("attribution-expanded")
     })
   }
 
