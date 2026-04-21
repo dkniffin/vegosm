@@ -63,6 +63,10 @@ export default class extends Controller {
     })
     this._lightTileLayer.addTo(this.map)
 
+    this.map.createPane('veganPane').style.zIndex = 650
+    this.map.createPane('vegetarianPane').style.zIndex = 640
+    this.map.createPane('friendlyPane').style.zIndex = 630
+
     this.veganLayer = L.layerGroup().addTo(this.map)
     this.vegetarianLayer = L.layerGroup().addTo(this.map)
     this.friendlyLayer = L.layerGroup().addTo(this.map)
@@ -151,13 +155,14 @@ export default class extends Controller {
   }
 
   _createMarker(node) {
-    const { color } = this._dietInfo(node.tags)
+    const { color, pane } = this._dietInfo(node.tags)
     const cuisineTag = node.tags["cuisine"]
     const iconUrl = CUISINES[cuisineTag]?.icon ?? DEFAULT_ICON
     const popupContents = buildPopup(node)
 
     return L.marker([node.lat, node.lon], {
       icon: createMarkerIcon(iconUrl, color),
+      pane,
       tags: [cuisineTag]
     }).on("click", () => {
       this.sidebar.setContent(popupContents)
@@ -166,9 +171,9 @@ export default class extends Controller {
   }
 
   _dietInfo(tags) {
-    if (tags["diet:vegan"] === "only")       return { color: "#388e3c", layer: this.veganLayer }
-    if (tags["diet:vegetarian"] === "only")  return { color: "#7b1fa2", layer: this.vegetarianLayer }
-    return                                          { color: "#1565c0", layer: this.friendlyLayer }
+    if (tags["diet:vegan"] === "only")       return { color: "#388e3c", layer: this.veganLayer,        pane: "veganPane" }
+    if (tags["diet:vegetarian"] === "only")  return { color: "#7b1fa2", layer: this.vegetarianLayer,   pane: "vegetarianPane" }
+    return                                          { color: "#1565c0", layer: this.friendlyLayer,     pane: "friendlyPane" }
   }
 
   _updateUrlParams() {
