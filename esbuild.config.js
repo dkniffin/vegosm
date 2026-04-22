@@ -1,4 +1,3 @@
-require("dotenv").config()
 const { parseArgs } = require("util")
 
 // Parse command line arguments
@@ -32,9 +31,6 @@ require("esbuild").context({
   loader: {
     ".png": "file",
     ".svg": "file"
-  },
-  define: {
-    "process.env.STADIA_API_KEY": JSON.stringify(process.env.STADIA_API_KEY || "")
   }
 }).then(context => {
   if (args.watch) {
